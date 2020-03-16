@@ -140,7 +140,7 @@ function MakeMove(move){
         TakeMove();
         return BOOL.FALSE;
     }
-        return BOOL.TRUE;
+    return BOOL.TRUE;
 }
 
 //undo

@@ -32,7 +32,7 @@ function AddWhitePawnCaptureMove(from, to, cap){
 function AddBlackPawnCaptureMove(from, to, cap){
     if(RanksBrd[from] == RANKS.RANK_2){
         AddCaptureMove(MOVE(from, to, cap, PIECES.bQ, 0));
-        AddCaptureMove(MOVE(from, to, cap. PIECES.bR, 0));
+        AddCaptureMove(MOVE(from, to, cap, PIECES.bR, 0));
         AddCaptureMove(MOVE(from, to, cap, PIECES.bB, 0));
         AddCaptureMove(MOVE(from, to, cap, PIECES.bN, 0));
     }else{

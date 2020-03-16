@@ -26,6 +26,8 @@ var BOOL = {
 var MAXGAMEMOVES = 2048;
 var MAXPOSITIONMOVES = 256;
 var MAXDEPTH = 64;
+var INFINITE = 30000;
+var MATE = 29000;
 
 //CONVERSIONS
 
@@ -132,7 +134,7 @@ function PROMOTED(m){return ((m >> 20) & 0xF);}
 
 var MFLAGEP = 0x40000;  //enpas
 var MFLAGPS = 0x80000;  //pawn start
-var MFLAGCA = 0x100000; //castle
+var MFLAGCA = 0x1000000; //castle
 
 var MFLAGCAP = 0x7C000;   //capture
 var MFLAGPROM = 0xF00000; //promotion
