@@ -93,5 +93,6 @@ function init() {
 	InitFilesRanksBrd();
 	InitHashKeys();
 	InitSq120To64();
-	InitBoardVars();
+    InitBoardVars();
+    InitMvvLva();
 }
