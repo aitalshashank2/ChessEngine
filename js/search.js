@@ -10,28 +10,30 @@ SearchController.stop;
 SearchController.best;
 SearchController.thinking;
 
-function PickNextMove(MoveNum){
-    var index = 0;
-    var bestScore = -1;
-    var bestNum = MoveNum;
+function PickNextMove(MoveNum) {
 
-    for(index = MoveNum; index < GameBoard.moveListStart[GameBoard.ply + 1]; ++index){
-        if(GameBoard.moveScores[index] > bestScore){
-            bestScore = GameBoard.moveScores[index];
-            bestNum = index;
-        }
-    }
+	var index = 0;
+	var bestScore = -1;
+	var bestNum = MoveNum;
+	
+	for(index = MoveNum; index < GameBoard.moveListStart[GameBoard.ply+1]; ++index) {
+		if(GameBoard.moveScores[index] > bestScore) {
+			bestScore = GameBoard.moveScores[index];
+			bestNum = index;			
+		}
+	} 
+	
+	if(bestNum != MoveNum) {
+		var temp = 0;
+		temp = GameBoard.moveScores[MoveNum];
+		GameBoard.moveScores[MoveNum] = GameBoard.moveScores[bestNum];
+		GameBoard.moveScores[bestNum] = temp;
+		
+		temp = GameBoard.moveList[MoveNum];
+		GameBoard.moveList[MoveNum] = GameBoard.moveList[bestNum];
+		GameBoard.moveList[bestNum] = temp;
+	}
 
-    if(bestNum != MoveNum){
-        var temp = 0;
-        temp = GameBoard.moveScores[MoveNum];
-        GameBoard.moveScores[MoveNum] = GameBoard.moveScores[bestNum];
-        GameBoard.moveScores[bestNum] = temp;
-
-        temp = GameBoard.moveList[MoveNum];
-        GameBoard.moveList[MoveNum] = GameBoard.moveList[bestNum];
-        GameBoard.moveList[bestNum] = temp;
-    }
 }
 
 function ClearPvTable() {
@@ -44,7 +46,7 @@ function ClearPvTable() {
 
 function CheckUp() {
 	if (( $.now() - SearchController.start ) > SearchController.time) {
-		SearchController.stop == BOOL.TRUE;
+		SearchController.stop = BOOL.TRUE;
 	}
 }
 
@@ -60,13 +62,13 @@ function IsRepetition() {
 	return BOOL.FALSE;
 }
 
-function Quiescence(alpha, beta){
-    if ((SearchController.nodes & 2047) == 0) {
-        CheckUp();
+function Quiescence(alpha, beta) {
+
+	if ((SearchController.nodes & 2047) == 0) {
+		CheckUp();
 	}
 	
-    SearchController.nodes++;
-	
+	SearchController.nodes++;
 	
 	if( (IsRepetition() || GameBoard.fiftyMove >= 100) && GameBoard.ply != 0) {
 		return 0;
@@ -74,28 +76,25 @@ function Quiescence(alpha, beta){
 	
 	if(GameBoard.ply > MAXDEPTH -1) {
 		return EvalPosition();
-    }
-    
-    var Score = EvalPosition();
-
-    if(Score >= beta){
-        return beta;
-    }
-
-    if(Score > alpha){
-        alpha = Score;
-    }
-
-    GenerateCaptures();
+	}	
+	
+	var Score = EvalPosition();
+	
+	if(Score >= beta) {
+		return beta;
+	}
+	
+	if(Score > alpha) {
+		alpha = Score;
+	}
+	
+	GenerateCaptures();
 	
 	var MoveNum = 0;
 	var Legal = 0;
 	var OldAlpha = alpha;
 	var BestMove = NOMOVE;
-	var Move = NOMOVE;
-	
-	/* Get PvMove */
-	/* Order PvMove */	
+	var Move = NOMOVE;	
 	
 	for(MoveNum = GameBoard.moveListStart[GameBoard.ply]; MoveNum < GameBoard.moveListStart[GameBoard.ply + 1]; ++MoveNum) {
 	
@@ -120,31 +119,34 @@ function Quiescence(alpha, beta){
 				if(Legal == 1) {
 					SearchController.fhf++;
 				}
-				SearchController.fh++;
+				SearchController.fh++;	
 				return beta;
 			}
 			alpha = Score;
 			BestMove = Move;
-		}
-    }
-    
-    if(alpha != OldAlpha) {
+		}		
+	}
+	
+	if(alpha != OldAlpha) {
 		StorePvMove(BestMove);
-    }
-    return alpha;
+	}
+	
+	return alpha;
+
 }
 
 function AlphaBeta(alpha, beta, depth) {
 
-    if(depth <= 0) {
-        return Quiescence(alpha, beta);
+	
+	if(depth <= 0) {
+		return Quiescence(alpha, beta);
 	}
 	
 	if ((SearchController.nodes & 2047) == 0) {
-        CheckUp();
+		CheckUp();
 	}
 	
-    SearchController.nodes++;	
+	SearchController.nodes++;
 	
 	if( (IsRepetition() || GameBoard.fiftyMove >= 100) && GameBoard.ply != 0) {
 		return 0;
@@ -167,24 +169,24 @@ function AlphaBeta(alpha, beta, depth) {
 	var Legal = 0;
 	var OldAlpha = alpha;
 	var BestMove = NOMOVE;
-	var Move = NOMOVE;
+	var Move = NOMOVE;	
 	
-    var PvMove = ProbePvTable();
-    if(PvMove != NOMOVE){
-        for(MoveNum = GameBoard.moveListStart[GameBoard.ply]; MoveNum < GameBoard.moveListStart[GameBoard.ply + 1]; ++MoveNum) {
-            if(GameBoard.moveList[MoveNum] == Move){
-                GameBoard.moveScores[MoveNum] = 2000000;
-                break;
-            }
-        }
-    }
+	var PvMove = ProbePvTable();
+	if(PvMove != NOMOVE) {
+		for(MoveNum = GameBoard.moveListStart[GameBoard.ply]; MoveNum < GameBoard.moveListStart[GameBoard.ply + 1]; ++MoveNum) {
+			if(GameBoard.moveList[MoveNum] == PvMove) {
+				GameBoard.moveScores[MoveNum] = 2000000;
+				break;
+			}
+		}
+	}
 	
 	for(MoveNum = GameBoard.moveListStart[GameBoard.ply]; MoveNum < GameBoard.moveListStart[GameBoard.ply + 1]; ++MoveNum) {
 	
-		PickNextMove(MoveNum);
+		PickNextMove(MoveNum);	
 		
 		Move = GameBoard.moveList[MoveNum];	
-
+		
 		if(MakeMove(Move) == BOOL.FALSE) {
 			continue;
 		}		
@@ -202,19 +204,20 @@ function AlphaBeta(alpha, beta, depth) {
 				if(Legal == 1) {
 					SearchController.fhf++;
 				}
-				SearchController.fh++;				
-				if((Move & MFLAGCAP) == 0){
-                    GameBoard.searchKillers[MAXDEPTH + GameBoard.ply] = GameBoard.searchKillers[GameBoard.ply];
-                    GameBoard.searchKillers[GameBoard.ply] = Move;
-                }				
+				SearchController.fh++;		
+				if((Move & MFLAGCAP) == 0) {
+					GameBoard.searchKillers[MAXDEPTH + GameBoard.ply] = 
+						GameBoard.searchKillers[GameBoard.ply];
+					GameBoard.searchKillers[GameBoard.ply] = Move;
+				}					
 				return beta;
-            }
-            if(Move & MFLAGCAP == 0){
-                GameBoard.searchHistory[GameBoard.pieces[FROMSQ(Move)] * BRD_SQ_NUM + TOSQ(Move)] += depth * depth;
-            }
+			}
+			if((Move & MFLAGCAP) == 0) {
+				GameBoard.searchHistory[GameBoard.pieces[FROMSQ(Move)] * BRD_SQ_NUM + TOSQ(Move)]
+						 += depth * depth;
+			}
 			alpha = Score;
-			BestMove = Move;
-			/* Update History Table */
+			BestMove = Move;				
 		}		
 	}	
 	
@@ -238,7 +241,7 @@ function ClearForSearch() {
 	var index = 0;
 	var index2 = 0;
 	
-	for(index = 0; index < 14 * BRD_SQ_NUM; ++index) {		
+	for(index = 0; index < 14 * BRD_SQ_NUM; ++index) {				
 		GameBoard.searchHistory[index] = 0;	
 	}
 	
@@ -259,19 +262,21 @@ function SearchPosition() {
 
 	var bestMove = NOMOVE;
 	var bestScore = -INFINITE;
+	var Score = -INFINITE;
 	var currentDepth = 0;
 	var line;
 	var PvNum;
 	var c;
 	ClearForSearch();
 	
-	for( currentDepth = 1; currentDepth <= /*SearchController.depth*/ 5; ++currentDepth) {	
+	for( currentDepth = 1; currentDepth <= SearchController.depth; ++currentDepth) {	
 	
-		bestScore = AlphaBeta(-INFINITE, INFINITE, currentDepth);
+		Score = AlphaBeta(-INFINITE, INFINITE, currentDepth);
 					
 		if(SearchController.stop == BOOL.TRUE) {
 			break;
 		}
+		bestScore = Score;
 		
 		bestMove = ProbePvTable();
 		line = 'D:' + currentDepth + ' Best:' + PrMove(bestMove) + ' Score:' + bestScore + 
@@ -281,16 +286,30 @@ function SearchPosition() {
 		line += ' Pv:';
 		for( c = 0; c < PvNum; ++c) {
 			line += ' ' + PrMove(GameBoard.PvArray[c]);
-        }
-        if(currentDepth != 1){
-            line += " Ordering: " + ((SearchController.fhf/SearchController.fh)*100).toFixed(2) + "%";
-        }
+		}
+		if(currentDepth!=1) {
+			line += (" Ordering:" + ((SearchController.fhf/SearchController.fh)*100).toFixed(2) + "%");
+		}
 		console.log(line);
 						
-	}
-	
-	
+	}	
+
 	SearchController.best = bestMove;
 	SearchController.thinking = BOOL.FALSE;
+	UpdateDOMStats(bestScore, currentDepth);
+}
 
+function UpdateDOMStats(dom_score, dom_depth) {
+
+	var scoreText = "Score: " + (dom_score / 100).toFixed(2);
+	if(Math.abs(dom_score) > MATE - MAXDEPTH) {
+		scoreText = "Score: Mate In " + ((MATE - Math.abs(dom_score)) - 1) + " moves";
+	}
+	
+	$("#OrderingOut").text("Ordering: " + ((SearchController.fhf/SearchController.fh)*100).toFixed(2) + "%");
+	$("#DepthOut").text("Depth: " + dom_depth);
+	$("#ScoreOut").text(scoreText);
+	$("#NodesOut").text("Nodes: " + SearchController.nodes);
+	$("#TimeOut").text("Time: " + (($.now()-SearchController.start)/1000).toFixed(1) + "s");
+	$("#BestOut").text("BestMove: " + PrMove(SearchController.best));
 }

@@ -1,15 +1,16 @@
-var MvvLvaValue = [0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600];
+var MvvLvaValue = [ 0, 100, 200, 300, 400, 500, 600, 100, 200, 300, 400, 500, 600 ];
 var MvvLvaScores = new Array(14 * 14);
 
-function InitMvvLva(){
-    var Attacker;
-    var Victim;
+function InitMvvLva() {
+	var Attacker;
+	var Victim;
+	
+	for(Attacker = PIECES.wP; Attacker <= PIECES.bK; ++Attacker) {
+		for(Victim = PIECES.wP; Victim <= PIECES.bK; ++Victim) {
+			MvvLvaScores[Victim * 14 + Attacker] = MvvLvaValue[Victim] + 6 - (MvvLvaValue[Attacker]/100);
+		}
+	}
 
-    for(Attacker = PIECES.wP; Attacker <= PIECES.bK; ++Attacker){
-        for(Victim = PIECES.wP; Victim <= PIECES.bK; ++Victim){
-            MvvLvaScores[Victim * 14 + Attacker] = MvvLvaValue[Victim] + 6 - (MvvLvaValue[Attacker]/100);
-        }
-    }
 }
 
 function MoveExists(move) {
@@ -38,27 +39,29 @@ function MOVE(from, to, captured, promoted, flag) {
 
 function AddCaptureMove(move) {
 	GameBoard.moveList[GameBoard.moveListStart[GameBoard.ply+1]] = move;
-	GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]++] = MvvLvaScores[CAPTURED(move) * 14 + GameBoard.pieces[FROMSQ(move)]] + 1000000;
+	GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]++] =  
+		MvvLvaScores[CAPTURED(move) * 14 + GameBoard.pieces[FROMSQ(move)]] + 1000000;	
 }
 
 function AddQuietMove(move) {
 	GameBoard.moveList[GameBoard.moveListStart[GameBoard.ply+1]] = move;
-    GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]] = 0;
-
-    if(move == GameBoard.searchKillers[GameBoard.ply]){
-        GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply + 1]] = 900000;
-    }else if(move == GameBoard.searchKillers[GameBoard.ply + MAXDEPTH]){
-        GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply + 1]] = 800000;
-    }else{
-        GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply + 1]] = GameBoard.searchHistory[GameBoard.pieces[FROMSQ(move)] * BRD_SQ_NUM + TOSQ(move)];
-    }
-
-    GameBoard.moveListStart[GameBoard.ply+1]++
+	GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]] =  0;
+	
+	if(move == GameBoard.searchKillers[GameBoard.ply]) {
+		GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]] = 900000;
+	} else if(move == GameBoard.searchKillers[GameBoard.ply + MAXDEPTH]) {
+		GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]] = 800000;
+	} else {
+		GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]] = 
+			GameBoard.searchHistory[GameBoard.pieces[FROMSQ(move)] * BRD_SQ_NUM + TOSQ(move)];
+	}
+	
+	GameBoard.moveListStart[GameBoard.ply+1]++
 }
 
 function AddEnPassantMove(move) {
 	GameBoard.moveList[GameBoard.moveListStart[GameBoard.ply+1]] = move;
-	GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply+1]++] = 105 + 1000000;
+	GameBoard.moveScores[GameBoard.moveListStart[GameBoard.ply + 1]++] = 105 + 1000000;
 }
 
 function AddWhitePawnCaptureMove(from, to, cap) {

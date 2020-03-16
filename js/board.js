@@ -1,4 +1,4 @@
- 
+
 function PCEINDEX(pce, pceNum) {
 	return (pce * 10 + pceNum);
 }
@@ -177,6 +177,7 @@ function UpdateListsMaterial() {
 			GameBoard.pceNum[piece]++;			
 		}
 	}
+	
 }
 
 function ResetBoard() {
